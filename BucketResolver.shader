@@ -2,7 +2,7 @@
 #extension GL_ARB_compute_shader : enable
 #extension GL_ARB_shader_storage_buffer_object : enable
 #define GID gl_GlobalInvocationID.x
-//COLLISION RESOLVING
+//define needed buffers
 layout(std140, binding = 4) buffer Pos
 {
 	vec4 Positions[];
@@ -11,18 +11,24 @@ layout(std140, binding = 5) buffer Vel
 {
 	vec4 Velocities[];
 };
-layout(std140, binding = 7) buffer PosOld
-{
-	vec4 PositionsOld[];
-};
+
 layout(std430, binding = 8) buffer Buck
 {
 	uint Buckets[];
 };
-layout(local_size_x = 100, local_size_y = 1, local_size_z = 1) in;
 
+uniform float xSizeB;
+uniform float ySizeB;
+uniform float zSizeB;
+uniform float spheresPerCell;
+uniform float cellSizeB;
 uniform float deltaTime;
-uniform float sideLength;
+layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+
+
+
+
+//dot product of two 3d vectors
 float dotP(vec3 a, vec3 b)
 {
 	return a.x * b.x + a.y * b.y + a.z * b.z;
@@ -33,52 +39,52 @@ void main()
 
 	
 		
-	
-		for (unsigned int i = 0; i < 200; i++)
+	//for every sphere check it against others for collision as they are in the same general area of space and could be in collision
+		for (unsigned int i = 0; i < uint(spheresPerCell); i++)
 		{
-			if(Buckets[i + GID * 200] != 0)
+			if(Buckets[i + GID * uint(spheresPerCell)] != 0)
 			{ 
-				for (unsigned int j = i; j < 200; j++)
+				for (unsigned int j = 0; j < uint(spheresPerCell); j++)
 				{
-					if (Buckets[j + GID * 200] != 0 && Buckets[j + GID * 200]!= Buckets[i + GID * 200])
+					//if the sphere is valid to check collision ie it is not the same sphere and it is not a null/0 sphere that doesnt exist
+					if (Buckets[j + GID * uint(spheresPerCell)] != 0 && Buckets[j + GID * uint(spheresPerCell)] != Buckets[i + GID * uint(spheresPerCell)])
 					{
-						vec3 cv = Positions[Buckets[j + GID * 200] - 1].xyz - Positions[Buckets[i + GID * 200] - 1].xyz;
-						float sqr = cv.x * cv.x + cv.y * cv.y + cv.z * cv.z;
-						if (sqr < 4.0000)
-						{
-							float l = sqrt(sqr);
-							//vec3 newVel = 0.50 * (Velocities[Buckets[j + GID * 200] - 1].xyz + Velocities[Buckets[i + GID * 200] - 1].xyz);
-							vec3 mov = (normalize(Positions[Buckets[j + GID * 200] - 1].xyz - Positions[Buckets[i + GID * 200] - 1].xyz)) * (2 - l) * 0.5001;
-							
-							if ( Positions[Buckets[j + GID * 200] - 1].x < 1.1 || Positions[Buckets[j + GID * 200] - 1].x > sideLength || Positions[Buckets[j + GID * 200] - 1].y < 1.1 || Positions[Buckets[j + GID * 200] - 1].z > sideLength || Positions[Buckets[j + GID * 200] - 1].z < 1.1 || Positions[Buckets[j + GID * 200] - 1].z > sideLength)
+						//vector pointing from sphere i to sphere j
+						vec3 cv = Positions[Buckets[j + GID * uint(spheresPerCell)] - 1].xyz - Positions[Buckets[i + GID * uint(spheresPerCell)] - 1].xyz;
+						
+							//find the square of the distance between the spheres
+							float sqr = cv.x * cv.x + cv.y * cv.y + cv.z * cv.z;
+							//check if they collide radius squared
+							if (sqr < 4.0000)
 							{
-								Positions[Buckets[i + GID * 200] - 1].xyz = Positions[Buckets[i + GID * 200] - 1].xyz - 2.0 * mov;
-							}
-							else if ( Positions[Buckets[i + GID * 200] - 1].x < 1.1 || Positions[Buckets[i + GID * 200] - 1].x > sideLength-1.1 || Positions[Buckets[i + GID * 200] - 1].y < 1.1 || Positions[Buckets[i + GID * 200] - 1].z > sideLength || Positions[Buckets[i + GID * 200] - 1].z < 1.1 || Positions[Buckets[i + GID * 200] - 1].z > sideLength)
-							{
-								Positions[Buckets[j + GID * 200] - 1].xyz = Positions[Buckets[j + GID * 200] - 1].xyz +2.0 * mov;
-							}
-							else 
-							{
+								//calculate how far the spheres must move to no longer collider
+								vec3 mov = (normalize(Positions[Buckets[j + GID * uint(spheresPerCell)] - 1].xyz - Positions[Buckets[i + GID * uint(spheresPerCell)] - 1].xyz)) * (2 - sqrt(sqr)) * 0.5000;
 
-								Positions[Buckets[j + GID * 200] - 1].xyz = Positions[Buckets[j + GID * 200] - 1].xyz + mov;
-								Positions[Buckets[i + GID * 200] - 1].xyz = Positions[Buckets[i + GID * 200] - 1].xyz - mov;
+
+								//move the spheres away from each other
+								Positions[Buckets[j + GID * uint(spheresPerCell)] - 1].xyz = Positions[Buckets[j + GID * uint(spheresPerCell)] - 1].xyz + mov;
+								Positions[Buckets[i + GID * uint(spheresPerCell)] - 1].xyz = Positions[Buckets[i + GID * uint(spheresPerCell)] - 1].xyz - mov;
+
+								//find the direction of impact normal to the surfaces of both spheres and intersecting the point they touch
+								vec3 vN = normalize(Positions[Buckets[j + GID * uint(spheresPerCell)] - 1].xyz - Positions[Buckets[i + GID * uint(spheresPerCell)] - 1].xyz);
+								//transfer their velocities in the direction of the normal sicne they have the same mass
+								vec3 prime = ((dot(Velocities[Buckets[i + GID * uint(spheresPerCell)] - 1].xyz, vN)) - (dot(Velocities[Buckets[j + GID * uint(spheresPerCell)] - 1].xyz, vN))) * vN;
+								Velocities[Buckets[i + GID * uint(spheresPerCell)] - 1].xyz -= 0.97 * prime;//newVel;//-1.0f * Velocities[Buckets[i + GID * uint(spheresPerCell)] - 1].xyz;//newVel;
+								Velocities[Buckets[j + GID * uint(spheresPerCell)] - 1].xyz += 0.97 * prime;// newVel; //-1.0f * Velocities[Buckets[j + GID * uint(spheresPerCell)] - 1].xyz;// newVel;
+					
+								//friction of collision, slow them down cuz they hit
+								Velocities[Buckets[j + GID * uint(spheresPerCell)] - 1].xyz -= (Velocities[Buckets[j + GID * uint(spheresPerCell)] - 1].xyz) * deltaTime * length(mov) * 05.5;
+								Velocities[Buckets[i + GID * uint(spheresPerCell)] - 1].xyz -= (Velocities[Buckets[i + GID * uint(spheresPerCell)] - 1].xyz) * deltaTime * length(mov) * 05.5;
 							}
-							vec3 vN = normalize(Positions[Buckets[j + GID * 200] - 1].xyz - Positions[Buckets[i + GID * 200] - 1].xyz);
-							vec3 vPrimei = Velocities[Buckets[i + GID * 200] - 1].xyz - (dot(Velocities[Buckets[i + GID * 200] - 1].xyz, vN)) * vN + (dot(Velocities[Buckets[j + GID * 200] - 1].xyz, vN)) * vN;
-							vec3 vPrimej = Velocities[Buckets[j + GID * 200] - 1].xyz + (dot(Velocities[Buckets[i + GID * 200] - 1].xyz, vN)) * vN - (dot(Velocities[Buckets[j + GID * 200] - 1].xyz, vN)) * vN;
-							Velocities[Buckets[i + GID * 200] - 1].xyz = vPrimei;//newVel;//-1.0f * Velocities[Buckets[i + GID * 200] - 1].xyz;//newVel;
-							Velocities[Buckets[j + GID * 200] - 1].xyz = vPrimej;// newVel; //-1.0f * Velocities[Buckets[j + GID * 200] - 1].xyz;// newVel;
-							
-						//	Velocities[Buckets[j + GID * 200] - 1].xyz -= Velocities[Buckets[j + GID * 200] - 1].xyz  * deltaTime * 3.5;
-							//Velocities[Buckets[i + GID * 200] - 1].xyz -= Velocities[Buckets[i + GID * 200] - 1].xyz  * deltaTime * 3.5;
 						}
 					}
-				}
-				Buckets[i + GID * 200] = 0;
+				//clear memory as buckets change from frame to frame
+				Buckets[i + GID * uint(spheresPerCell)] = 0;
 			}
 			else
 			{
+
+				// stop checking for collisions if you are out of spheres to check
 				break;
 			}
 		}
