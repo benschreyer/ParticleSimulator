@@ -8,16 +8,16 @@
 
 
 //constants
-#define CIRCLE_POINTS 12 // for circle drawing
+#define CIRCLE_POINTS 64 // for circle drawing
 #define PI 3.14159265358979323846264338327950288f
 #define NUM_PARTICLES 100000
-#define DELTA_TIME 1/200.0f
+#define DELTA_TIME 1/300.0f
 
 #define CELLSIZE (5)
 //measured length of the sides of the containing box
-#define XSIZE (20 * CELLSIZE)//4
-#define YSIZE (30 * CELLSIZE)
-#define ZSIZE (40 * CELLSIZE)
+#define XSIZE (40 * CELLSIZE)//4
+#define YSIZE (60 * CELLSIZE)
+#define ZSIZE (60 * CELLSIZE)
 
 //dimensions of the 3d cube hash
 #define XCELLS (XSIZE / CELLSIZE)
@@ -246,10 +246,10 @@ int main(void)
 		}
 		else
 		{
-			points[i].x = 1.2f + randFloat() * XSIZE / 1.3f;
-			points[i].y = 05.0f + randFloat() * YSIZE / 1.1;
+			points[i].x = 0.2f + randFloat() * XSIZE / 3.3f + randFloat() * XSIZE / 3.3f;
+			points[i].y = 05.0f + randFloat() * YSIZE / 2.3 + randFloat() * YSIZE / 2.6;
 
-			points[i].z = 1.4f + randFloat() * ZSIZE / 2.02f;
+			points[i].z = 0.4f + randFloat() * ZSIZE / 4.22f + randFloat() * ZSIZE / 4.22f;
 
 			points[i].w = 1;
 		}

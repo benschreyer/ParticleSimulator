@@ -37,38 +37,38 @@ void main()
 	{
 		Positions[GID].x = 1.0067656;
 		Velocities[GID].x = Velocities[GID].x * -1.0;
-		Velocities[GID].xyz -= Velocities[GID].xyz * deltaTime * 45.0;
+		Velocities[GID].xyz -= Velocities[GID].xyz * deltaTime *145.0;
 	}
 	if (Positions[GID].x > xSizeB - 1)
 	{
 		Positions[GID].x = xSizeB - 1.00874222;
 		Velocities[GID].x = Velocities[GID].x * -1.0;
-		Velocities[GID].xyz -= Velocities[GID].xyz * deltaTime *45.0;
+		Velocities[GID].xyz -= Velocities[GID].xyz * deltaTime *145.0;
 	}
 	if (Positions[GID].y < 1)
 	{
 		Positions[GID].y = 1.012467;
 		Velocities[GID].y = Velocities[GID].y * -1.0;
-		Velocities[GID].xyz -= Velocities[GID].xyz * deltaTime * 45.0;
+		Velocities[GID].xyz -= Velocities[GID].xyz * deltaTime * 145.0;
 	}
 
 	if (Positions[GID].y > ySizeB - 1)
 	{
 		Positions[GID].y = ySizeB - 1.00452;
 		Velocities[GID].y = Velocities[GID].y * -1.0;
-		Velocities[GID].xyz -= Velocities[GID].xyz * deltaTime * 45.01;
+		Velocities[GID].xyz -= Velocities[GID].xyz * deltaTime * 145.01;
 	}
 	if (Positions[GID].z < 1)
 	{
 		Positions[GID].z = 1.008123;
 		Velocities[GID].z = Velocities[GID].z * -1.0;
-		Velocities[GID].xyz -= Velocities[GID].xyz * deltaTime * 35.01;
+		Velocities[GID].xyz -= Velocities[GID].xyz * deltaTime * 135.01;
 	}
 	if (Positions[GID].z > zSizeB - 1)
 	{
 		Positions[GID].z = zSizeB - 1.00431111243;
 		Velocities[GID].z = Velocities[GID].z * -1.0;
-		Velocities[GID].xyz -= Velocities[GID].xyz * deltaTime * 35.01;
+		Velocities[GID].xyz -= Velocities[GID].xyz * deltaTime *135.01;
 	}
 	//Euler's method gravity if it is not touching the floor
 	if(Positions[GID].y > 1.001f)
@@ -77,5 +77,10 @@ void main()
 		Velocities[GID].y -= 9.8 * deltaTime;
 
     }
+	if (length(Velocities[GID].xyz) < 1.0 * deltaTime)
+	{
+		Velocities[GID].xyz = vec3(0.0, 0.0, 0.0);
+	}
+	
 	
 }	
