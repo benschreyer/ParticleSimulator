@@ -1,3 +1,4 @@
+//Benjamin Schreyer 02/11/2021
 #pragma once
 #include <GL/glew.h>
 #include <string>
@@ -9,7 +10,7 @@
 #include "BufferDescriptor.h"
 #include "Debug.h"
 
-
+//Quickly setup and compile compute shaders
 class ComputeShader
 {
 public:
@@ -26,9 +27,12 @@ public:
 	void SetUniform1ui(const std::string& name, unsigned int v0);
 	void SetUniform1f(const std::string& name, float v0);
 	unsigned int m_RendererID;
+
+	
 	std::unordered_map<std::string, int> m_UniformLocationCache;
 	//std::vector<unsigned int> SSBOID;
 	//std::vector<unsigned int> SSBOPOS;
 
+	//Buffers that need to be bound for this shader
 	std::vector<BufferDescriptor*> buffers;
 };

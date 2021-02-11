@@ -1,3 +1,5 @@
+//Benjamin Schreyer 02/11/2021, based off of TheCherno on youtube.com's basic OpenGL debug macros
+
 #pragma once
 #include <GL/glew.h>
 

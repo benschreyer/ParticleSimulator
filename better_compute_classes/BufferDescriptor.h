@@ -1,6 +1,8 @@
+//Benjamin Schreyer 02/11/2021
 #pragma once
 #include "Debug.h"
 
+//Describes an openGL buffer enough to bind and unbind
 
 class BufferDescriptor
 {

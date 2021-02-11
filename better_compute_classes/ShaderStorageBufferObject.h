@@ -1,3 +1,4 @@
+//Benjamin Schreyer 02/11/2021
 #pragma once
 #include "BufferDescriptor.h"
 #include "Debug.h"
@@ -60,7 +61,7 @@ inline ShaderStorageBufferObject<T>::~ShaderStorageBufferObject()
 }
 
 template <typename T>
-
+//Get a pointer to this GPU memory for the CPU to acces(read/write depends on bitflags in mapAccess)
 inline T* ShaderStorageBufferObject<T>::getMap()
 {
 	
@@ -92,6 +93,7 @@ inline void ShaderStorageBufferObject<T>::unbind()
 
 template <typename T>
 
+//Useful since you cannot store an array of different template typed buffer descriptors
 inline BufferDescriptor* ShaderStorageBufferObject<T>::getDescriptor()
 {
 	return this->bufferDescriptor;
