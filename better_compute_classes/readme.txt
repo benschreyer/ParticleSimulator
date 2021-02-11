@@ -1,0 +1,1 @@
+These are fully finished compute classes that are fully encapsulated instead of half
